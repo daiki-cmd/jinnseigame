@@ -1,0 +1,1214 @@
+<!doctype html>
+<html lang="ja">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>MBTI人生ゲーム</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com" />
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+	<link href="https://fonts.googleapis.com/css2?family=Yusei+Magic&family=M+PLUS+Rounded+1c:wght@400;700;900&display=swap" rel="stylesheet" />
+	<style>
+		:root {
+			--bg1: #fff7e8;
+			--bg2: #f7f0ff;
+			--panel: #fffdf9;
+			--ink: #2e2440;
+			--sub: #65557a;
+			--accent: #ff7f50;
+			--accent-2: #36a2a3;
+			--tile: #fff;
+			--tile-border: #e7d8f2;
+			--success: #20894f;
+			--danger: #b6414a;
+			--shadow: 0 10px 30px rgba(35, 12, 67, 0.12);
+			--radius: 18px;
+			--road: #f9eed7;
+			--road-line: #d1b589;
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			margin: 0;
+			min-height: 100vh;
+			font-family: "M PLUS Rounded 1c", sans-serif;
+			color: var(--ink);
+			background:
+				radial-gradient(circle at 8% 15%, rgba(255, 175, 128, 0.45), transparent 35%),
+				radial-gradient(circle at 90% 85%, rgba(84, 180, 167, 0.28), transparent 32%),
+				linear-gradient(160deg, var(--bg1), var(--bg2));
+			padding: 20px;
+		}
+
+		.shell {
+			max-width: 1080px;
+			margin: 0 auto;
+			display: grid;
+			grid-template-columns: 1.1fr 0.9fr;
+			gap: 18px;
+			animation: fadeIn 500ms ease;
+		}
+
+		.card {
+			background: var(--panel);
+			border-radius: var(--radius);
+			box-shadow: var(--shadow);
+			border: 1px solid rgba(255, 255, 255, 0.75);
+			overflow: hidden;
+		}
+
+		.hero {
+			padding: 20px 22px 18px;
+			border-bottom: 1px dashed #ecdff7;
+			background:
+				linear-gradient(135deg, rgba(255, 127, 80, 0.09), rgba(54, 162, 163, 0.06)),
+				repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.35) 0, rgba(255, 255, 255, 0.35) 8px, transparent 8px, transparent 16px);
+		}
+
+		.title {
+			margin: 0;
+			font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+			letter-spacing: 0.04em;
+			font-family: "Yusei Magic", sans-serif;
+		}
+
+		.subtitle {
+			margin: 6px 0 0;
+			color: var(--sub);
+			font-size: 0.98rem;
+		}
+
+		.setup,
+		.game {
+			padding: 18px 22px 22px;
+		}
+
+		.row {
+			display: grid;
+			gap: 12px;
+			grid-template-columns: 1fr 1fr;
+		}
+
+		.player-manager {
+			display: grid;
+			gap: 8px;
+			margin-bottom: 12px;
+		}
+
+		.player-row {
+			display: grid;
+			grid-template-columns: 1fr 130px auto;
+			gap: 8px;
+			align-items: center;
+		}
+
+		.player-row .remove-player {
+			padding: 10px 12px;
+			border-radius: 12px;
+			font-weight: 700;
+			background: #fff2f2;
+			color: #924349;
+			border: 1px solid #f2c7ca;
+		}
+
+		.field {
+			display: flex;
+			flex-direction: column;
+			gap: 6px;
+			margin-bottom: 12px;
+		}
+
+		label {
+			font-size: 0.9rem;
+			color: #5f4f79;
+			font-weight: 700;
+		}
+
+		input,
+		select,
+		button {
+			font: inherit;
+		}
+
+		input,
+		select {
+			border-radius: 12px;
+			border: 1px solid #ddcde9;
+			background: #fff;
+			padding: 10px 12px;
+			color: var(--ink);
+			outline: none;
+			transition: border-color 180ms ease, box-shadow 180ms ease;
+		}
+
+		input:focus,
+		select:focus {
+			border-color: #c38ee5;
+			box-shadow: 0 0 0 4px rgba(195, 142, 229, 0.16);
+		}
+
+		button {
+			border: none;
+			border-radius: 999px;
+			padding: 11px 16px;
+			cursor: pointer;
+			font-weight: 900;
+			letter-spacing: 0.03em;
+			transition: transform 140ms ease, filter 140ms ease;
+		}
+
+		button:active {
+			transform: translateY(2px) scale(0.99);
+		}
+
+		.btn-main {
+			background: linear-gradient(115deg, var(--accent), #ff9c42);
+			color: #fff;
+			box-shadow: 0 8px 16px rgba(255, 127, 80, 0.28);
+		}
+
+		.btn-main:hover {
+			filter: brightness(1.05);
+		}
+
+		.btn-sub {
+			background: #eaf4f4;
+			color: #2f6969;
+		}
+
+		.btn-soft {
+			background: #f4ecff;
+			color: #5f3d89;
+		}
+
+		.hud {
+			display: grid;
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+			gap: 8px;
+			margin-bottom: 14px;
+		}
+
+		.pill {
+			background: #fff;
+			border: 1px solid #e8dff2;
+			border-radius: 14px;
+			padding: 10px;
+			min-height: 74px;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			gap: 4px;
+		}
+
+		.pill small {
+			color: var(--sub);
+			font-size: 0.78rem;
+			font-weight: 700;
+		}
+
+		.pill strong {
+			font-size: 1.2rem;
+			line-height: 1;
+		}
+
+		.dice {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 8px;
+			margin: 8px 0 14px;
+			font-weight: 900;
+		}
+
+		.die {
+			width: 48px;
+			aspect-ratio: 1;
+			border-radius: 12px;
+			background: #fff;
+			border: 1px solid #f1d8cc;
+			box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.04);
+			display: grid;
+			place-items: center;
+			font-size: 1.4rem;
+			transition: transform 220ms ease;
+		}
+
+		.rolling .die {
+			transform: rotate(9deg) scale(1.06);
+		}
+
+		.event {
+			border-radius: 14px;
+			padding: 12px;
+			background: #fff9f2;
+			border: 1px solid #f6dcc6;
+			color: #6b4a1a;
+			margin-bottom: 12px;
+			min-height: 66px;
+		}
+
+		.turn-strip {
+			margin: 10px 0 14px;
+			padding: 10px 12px;
+			border-radius: 12px;
+			background: linear-gradient(115deg, #f7f8ff, #f4fff8);
+			border: 1px solid #dbdeef;
+			font-weight: 700;
+			color: #37406c;
+		}
+
+		.board {
+			display: grid;
+			grid-template-columns: repeat(5, 1fr);
+			gap: 10px;
+			margin-top: 8px;
+			padding: 14px;
+			border-radius: 16px;
+			background:
+				radial-gradient(circle at 6% 4%, rgba(255, 255, 255, 0.8), transparent 30%),
+				repeating-linear-gradient(-35deg, rgba(255, 255, 255, 0.28) 0, rgba(255, 255, 255, 0.28) 12px, transparent 12px, transparent 24px),
+				linear-gradient(180deg, #f5efe2, #fcf7ed);
+			border: 1px solid #eadbc2;
+			position: relative;
+		}
+
+
+
+		.tile {
+			background: linear-gradient(180deg, var(--road), #fff6e8);
+			border: 1px solid #e8cfaa;
+			border-radius: 12px;
+			min-height: 78px;
+			padding: 8px;
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+			position: relative;
+			transition: transform 180ms ease, border-color 180ms ease;
+			box-shadow: inset 0 -3px 0 rgba(146, 108, 61, 0.1);
+		}
+
+		.tile::before {
+			content: "";
+			position: absolute;
+			left: -10px;
+			right: -10px;
+			top: 50%;
+			height: 4px;
+			transform: translateY(-50%);
+			background:
+				repeating-linear-gradient(90deg, var(--road-line) 0, var(--road-line) 10px, transparent 10px, transparent 18px);
+			opacity: 0.45;
+			pointer-events: none;
+		}
+
+		.tile .n {
+			font-size: 0.74rem;
+			color: #7a5f3c;
+			font-weight: 700;
+		}
+
+		.tile .t {
+			font-size: 0.82rem;
+			font-weight: 700;
+			line-height: 1.2;
+			color: #5a4124;
+		}
+
+		.tile .tokens {
+			display: flex;
+			align-items: center;
+			gap: 0;
+			margin-top: auto;
+			min-height: 24px;
+		}
+
+		.token {
+			width: 22px;
+			height: 22px;
+			border-radius: 999px;
+			display: grid;
+			place-items: center;
+			font-size: 0.64rem;
+			font-weight: 900;
+			color: #fff;
+			border: 2px solid rgba(255, 255, 255, 0.8);
+			margin-right: -6px;
+			box-shadow: 0 1px 4px rgba(33, 26, 53, 0.16);
+		}
+
+		.token-more {
+			width: auto;
+			height: 20px;
+			padding: 0 8px;
+			border-radius: 999px;
+			margin-right: 0;
+			margin-left: 6px;
+			font-size: 0.66rem;
+			font-weight: 900;
+			color: #5a4124;
+			background: #fff8e7;
+			border: 1px solid #e7cfaa;
+			display: grid;
+			place-items: center;
+		}
+
+		.tile.crowded {
+			outline: 2px solid rgba(61, 168, 146, 0.22);
+			outline-offset: -2px;
+		}
+
+		.tile.current {
+			border-color: #f58831;
+			transform: translateY(-2px);
+			box-shadow: 0 6px 14px rgba(245, 136, 49, 0.3);
+		}
+
+		.tile.goal {
+			background: linear-gradient(150deg, #ecfff4, #fff9df);
+			border-color: #cde5be;
+		}
+
+		.tile.branch::after {
+			content: "分岐";
+			position: absolute;
+			right: 6px;
+			top: 6px;
+			font-size: 0.62rem;
+			background: #edf7f7;
+			color: #286c6d;
+			padding: 2px 6px;
+			border-radius: 999px;
+			font-weight: 700;
+		}
+
+
+		.tile.trap {
+			background: linear-gradient(180deg, #fff0f1, #ffe2e6);
+			border-color: #e7aeb7;
+			box-shadow: inset 0 -3px 0 rgba(142, 53, 63, 0.13);
+		}
+
+		.logs {
+			padding: 16px;
+			max-height: 520px;
+			overflow: auto;
+			background:
+				linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(248, 245, 255, 0.8));
+		}
+
+		.logs h2 {
+			margin: 0 0 8px;
+			font-size: 1.05rem;
+			font-family: "Yusei Magic", sans-serif;
+		}
+
+		.log {
+			border-left: 3px solid #d5c1e6;
+			padding: 8px 10px;
+			margin: 8px 0;
+			background: #fff;
+			border-radius: 8px;
+			font-size: 0.92rem;
+			color: #4a3f5d;
+			animation: rise 220ms ease;
+		}
+
+		.log.good {
+			border-left-color: #97d4ad;
+		}
+
+		.log.bad {
+			border-left-color: #eab0b4;
+		}
+
+		.hidden {
+			display: none;
+		}
+
+		.goal-banner {
+			margin-top: 10px;
+			border-radius: 14px;
+			background: #f0fff6;
+			border: 1px solid #bde4c8;
+			padding: 10px 12px;
+			font-weight: 900;
+			color: var(--success);
+		}
+
+		.standings {
+			margin-top: 10px;
+			padding: 10px;
+			border-radius: 12px;
+			border: 1px solid #e7deef;
+			background: #fff;
+		}
+
+		.standings h3 {
+			margin: 0 0 6px;
+			font-size: 0.9rem;
+			color: #5f5176;
+		}
+
+		.standings ul {
+			list-style: none;
+			padding: 0;
+			margin: 0;
+			display: grid;
+			gap: 4px;
+		}
+
+		.standings li {
+			padding: 6px 8px;
+			border-radius: 8px;
+			background: #f8f3ff;
+			color: #4f3f66;
+			font-size: 0.87rem;
+		}
+
+		.standings .money {
+			font-weight: 900;
+			color: #23673f;
+		}
+
+		.meta {
+			color: #7a6f8e;
+			font-size: 0.82rem;
+			margin-top: 6px;
+		}
+
+		@keyframes fadeIn {
+			from { opacity: 0; transform: translateY(8px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		@keyframes rise {
+			from { opacity: 0; transform: translateY(6px); }
+			to { opacity: 1; transform: translateY(0); }
+		}
+
+		@media (max-width: 940px) {
+			.shell {
+				grid-template-columns: 1fr;
+			}
+
+			.logs {
+				max-height: none;
+			}
+		}
+
+		@media (max-width: 520px) {
+			body {
+				padding: 12px;
+			}
+
+			.row,
+			.hud {
+				grid-template-columns: 1fr;
+			}
+
+			.board {
+				grid-template-columns: repeat(3, 1fr);
+			}
+
+			.player-row {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</head>
+<body>
+	<main class="shell">
+		<section class="card">
+			<header class="hero">
+				<h1 class="title">MBTI人生ゲーム</h1>
+				<p class="subtitle">性格タイプで運命が分岐する、みんなで遊べるすごろく</p>
+			</header>
+
+			<section id="setup" class="setup">
+				<div class="field">
+					<label>プレイヤー設定 (2〜6人)</label>
+					<div id="playerManager" class="player-manager"></div>
+					<div class="row">
+						<button id="addPlayerBtn" class="btn-soft" type="button">プレイヤーを追加</button>
+						<button id="startBtn" class="btn-main" type="button">ゲーム開始</button>
+					</div>
+				</div>
+				<p class="meta">ルール: サイコロを2個ふって進み、止まったマスでMBTIごとのイベントが発生します。DDDDは厄マスを狙う特殊タイプです。</p>
+			</section>
+
+			<section id="game" class="game hidden">
+				<div class="hud">
+					<div class="pill"><small>手番プレイヤー</small><strong id="hudName">-</strong></div>
+					<div class="pill"><small>MBTI</small><strong id="hudMbti">-</strong></div>
+					<div class="pill"><small>現在地</small><strong id="hudPos">0 / 20</strong></div>
+					<div class="pill"><small>ラウンド</small><strong id="hudRound">1</strong></div>
+					<div class="pill"><small>所持金</small><strong id="hudMoney">0 G</strong></div>
+				</div>
+
+				<div id="turnStrip" class="turn-strip">手番を準備中...</div>
+
+				<div id="diceWrap" class="dice">
+					<div id="die1" class="die">1</div>
+					<span>+</span>
+					<div id="die2" class="die">1</div>
+					<span>=</span>
+					<strong id="diceTotal">2</strong>
+				</div>
+
+				<div id="eventBox" class="event">開始ボタンで冒険スタート。</div>
+
+				<div class="row" style="margin-bottom: 10px;">
+					<button id="rollBtn" class="btn-main" type="button">サイコロを2個ふる</button>
+					<button id="resetBtn" class="btn-sub" type="button">最初からやり直す</button>
+				</div>
+
+				<div id="goalBanner" class="goal-banner hidden">ゴール到達! あなたらしい人生ルートを完走しました。</div>
+
+				<div id="board" class="board"></div>
+
+				<div class="standings">
+					<h3>順位ボード</h3>
+					<ul id="standingsList"></ul>
+				</div>
+			</section>
+		</section>
+
+		<aside class="card logs" id="logs">
+			<h2>プレイログ</h2>
+			<p class="meta" style="margin: 0 0 8px;">同じマスではコマが重なって表示され、右の +N で人数が分かります。</p>
+			<div id="logList"></div>
+		</aside>
+	</main>
+
+	<script>
+		const MBTI_LIST = [
+			"DDDD", "INTJ", "INTP", "ENTJ", "ENTP",
+			"INFJ", "INFP", "ENFJ", "ENFP",
+			"ISTJ", "ISFJ", "ESTJ", "ESFJ",
+			"ISTP", "ISFP", "ESTP", "ESFP"
+		];
+
+		const TILES = [
+			{ id: 0, title: "スタート" },
+			{ id: 1, title: "自己紹介タイム" },
+			{ id: 2, title: "勉強会で発見" },
+			{ id: 3, title: "協力プロジェクト" },
+			{ id: 4, title: "交流の交差点", branch: true },
+			{ id: 5, title: "Eルート: 社交チャレンジ" },
+			{ id: 6, title: "Eルート: 仲間が増える" },
+			{ id: 7, title: "Iルート: 集中タイム" },
+			{ id: 8, title: "Iルート: 深掘り研究" },
+			{ id: 9, title: "合流ポイントA" },
+			{ id: 10, title: "視点の分岐", branch: true },
+			{ id: 11, title: "Nルート: 未来アイデア" },
+			{ id: 12, title: "Nルート: ひらめき爆発" },
+			{ id: 13, title: "Sルート: 現実プラン" },
+			{ id: 14, title: "Sルート: 実務の達人" },
+			{ id: 15, title: "合流ポイントB" },
+			{ id: 16, title: "判断の試練" },
+			{ id: 17, title: "感情ケアの時間" },
+			{ id: 18, title: "締切ラッシュ" },
+			{ id: 19, title: "運命の最終面接" },
+			{ id: 20, title: "ゴール", goal: true }
+		];
+
+		const DDDD_BAD_TILES = new Set([2, 3, 5, 8, 10, 12, 14, 16, 18, 19, 20]);
+
+		const PLAYER_COLORS = ["#f07167", "#00a9a5", "#7678ed", "#f4a261", "#7cb518", "#c77dff"];
+
+		const STATE = {
+			started: false,
+			turns: 0,
+			round: 1,
+			players: [],
+			currentPlayerIndex: 0,
+			finishedOrder: []
+		};
+
+		const el = {
+			setup: document.getElementById("setup"),
+			game: document.getElementById("game"),
+			playerManager: document.getElementById("playerManager"),
+			addPlayerBtn: document.getElementById("addPlayerBtn"),
+			startBtn: document.getElementById("startBtn"),
+			rollBtn: document.getElementById("rollBtn"),
+			resetBtn: document.getElementById("resetBtn"),
+			hudName: document.getElementById("hudName"),
+			hudMbti: document.getElementById("hudMbti"),
+			hudPos: document.getElementById("hudPos"),
+			hudRound: document.getElementById("hudRound"),
+			hudMoney: document.getElementById("hudMoney"),
+			turnStrip: document.getElementById("turnStrip"),
+			die1: document.getElementById("die1"),
+			die2: document.getElementById("die2"),
+			diceWrap: document.getElementById("diceWrap"),
+			diceTotal: document.getElementById("diceTotal"),
+			eventBox: document.getElementById("eventBox"),
+			board: document.getElementById("board"),
+			logList: document.getElementById("logList"),
+			goalBanner: document.getElementById("goalBanner"),
+			standingsList: document.getElementById("standingsList")
+		};
+
+		function mbtiSelectMarkup(selected = "ENFP") {
+			return MBTI_LIST
+				.map((type) => `<option value="${type}" ${selected === type ? "selected" : ""}>${type}</option>`)
+				.join("");
+		}
+
+		function createPlayerRow(defaultName = "", defaultMbti = "ENFP") {
+			const row = document.createElement("div");
+			row.className = "player-row";
+			row.innerHTML = `
+				<input class="player-name" type="text" maxlength="20" placeholder="プレイヤー名" value="${defaultName}" />
+				<select class="player-mbti">${mbtiSelectMarkup(defaultMbti)}</select>
+				<button class="remove-player" type="button">削除</button>
+			`;
+
+			const removeBtn = row.querySelector(".remove-player");
+			removeBtn.addEventListener("click", () => {
+				if (el.playerManager.children.length <= 2) {
+					addLog("プレイヤーは2人以上必要です。", "bad");
+					showEvent("プレイヤーは2人以上必要です。", "bad");
+					return;
+				}
+				row.remove();
+			});
+
+			el.playerManager.appendChild(row);
+		}
+
+		function renderBoard() {
+			const tilePlayersMap = new Map();
+			for (const p of STATE.players) {
+				if (!tilePlayersMap.has(p.pos)) tilePlayersMap.set(p.pos, []);
+				tilePlayersMap.get(p.pos).push(p);
+			}
+
+			const displayOrder = [
+				[0, 1, 2, 3, 4],
+				[9, 8, 7, 6, 5],
+				[10, 11, 12, 13, 14],
+				[19, 18, 17, 16, 15],
+				[20]
+			];
+
+			const current = STATE.players[STATE.currentPlayerIndex];
+
+			let html = "";
+			for (const row of displayOrder) {
+				for (const tileId of row) {
+					const tile = TILES[tileId];
+					const classes = ["tile"];
+					if (current && tile.id === current.pos) classes.push("current");
+					if (tile.goal) classes.push("goal");
+					if (tile.branch) classes.push("branch");
+					if (DDDD_BAD_TILES.has(tile.id)) classes.push("trap");
+					const herePlayers = tilePlayersMap.get(tile.id) || [];
+					if (herePlayers.length > 1) classes.push("crowded");
+					const visible = herePlayers.slice(0, 3)
+						.map((p) => `<span class="token" style="background:${p.color}" title="${p.name} (${p.mbti}) / ${formatMoney(p.money)}">${p.name.slice(0, 1).toUpperCase()}</span>`)
+						.join("");
+					const hiddenCount = Math.max(0, herePlayers.length - 3);
+					const hiddenNames = hiddenCount ? herePlayers.slice(3).map((p) => p.name).join(", ") : "";
+					const more = hiddenCount ? `<span class="token-more" title="${hiddenNames}">+${hiddenCount}</span>` : "";
+					const tokens = visible + more;
+					html += `
+						<div class="${classes.join(" ")}" data-id="${tile.id}">
+							<span class="n">${tile.id + 1}</span>
+							<span class="t">${tile.title}</span>
+							<div class="tokens">${tokens}</div>
+						</div>
+					`;
+				}
+			}
+			el.board.innerHTML = html;
+			drawBoardPath();
+		}
+
+		function drawBoardPath() {
+			// タイル要素を取得してマップ化
+			const tiles = Array.from(el.board.querySelectorAll(".tile"));
+			const tileMap = new Map(tiles.map(t => [parseInt(t.dataset.id), t]));
+
+			// パスの座標を計算（tile.idの順序で）
+			const pathPoints = [];
+			for (let tileId = 0; tileId < TILES.length; tileId++) {
+				const tile = tileMap.get(tileId);
+				if (tile) {
+					const rect = tile.getBoundingClientRect();
+					const boardRect = el.board.getBoundingClientRect();
+					const x = rect.left - boardRect.left + rect.width / 2;
+					const y = rect.top - boardRect.top + rect.height / 2;
+					pathPoints.push([x, y]);
+				}
+			}
+
+			// SVGパスを生成
+			if (pathPoints.length > 1) {
+				let pathD = `M ${pathPoints[0][0]} ${pathPoints[0][1]}`;
+				for (let i = 1; i < pathPoints.length; i++) {
+					pathD += ` L ${pathPoints[i][0]} ${pathPoints[i][1]}`;
+				}
+
+				// 既存のSVGを削除
+				const oldSvg = el.board.querySelector("svg");
+				if (oldSvg) oldSvg.remove();
+
+				// 新しいSVGを作成
+				const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+				svg.setAttribute("width", "100%");
+				svg.setAttribute("height", "100%");
+				svg.setAttribute("viewBox", `0 0 ${el.board.offsetWidth} ${el.board.offsetHeight}`);
+				svg.setAttribute("preserveAspectRatio", "none");
+				svg.style.position = "absolute";
+				svg.style.inset = "0";
+				svg.style.pointerEvents = "none";
+				svg.style.zIndex = "0";
+
+				const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+				path.setAttribute("d", pathD);
+				path.setAttribute("stroke", "#000");
+				path.setAttribute("stroke-width", "8");
+				path.setAttribute("fill", "none");
+				path.setAttribute("stroke-linecap", "round");
+				path.setAttribute("stroke-linejoin", "round");
+
+				svg.appendChild(path);
+				el.board.insertBefore(svg, el.board.firstChild);
+
+				// タイルをSVGの上に配置
+				for (const tile of tiles) {
+					tile.style.position = "relative";
+					tile.style.zIndex = "1";
+				}
+			}
+		}
+
+		function addLog(text, tone = "") {
+			const div = document.createElement("div");
+			div.className = `log ${tone}`.trim();
+			div.textContent = text;
+			el.logList.prepend(div);
+		}
+
+		function formatMoney(value) {
+			return `${value.toLocaleString("ja-JP")} G`;
+		}
+
+		function isDddd(player) {
+			return player && player.mbti === "DDDD";
+		}
+
+		function positionAfterSteps(player, steps) {
+			let next = player.pos;
+			for (let i = 0; i < steps; i += 1) {
+				next = getNextPosition(next, player);
+			}
+			return next;
+		}
+
+		function ddddOptionsFor(player) {
+			const options = [];
+			for (let total = 2; total <= 12; total += 1) {
+				const dest = positionAfterSteps(player, total);
+				if (!DDDD_BAD_TILES.has(dest)) continue;
+				if (!options.some((o) => o.dest === dest)) {
+					options.push({ total, dest });
+				}
+			}
+			return options;
+		}
+
+		function renderDdddControl(player) {
+			return;
+		}
+
+		function splitDice(total) {
+			const d1 = Math.min(6, Math.max(1, total - 1));
+			const d2 = total - d1;
+			if (d2 >= 1 && d2 <= 6) return [d1, d2];
+			const fallback1 = Math.max(1, total - 6);
+			const fallback2 = total - fallback1;
+			return [Math.min(6, fallback1), Math.min(6, Math.max(1, fallback2))];
+		}
+
+		function updateStandings() {
+			const sorted = [...STATE.players].sort((a, b) => b.pos - a.pos || b.money - a.money || a.turnsTaken - b.turnsTaken);
+			el.standingsList.innerHTML = sorted
+				.map((p, idx) => {
+					const rank = p.finishedRank ? `${p.finishedRank}位` : `${idx + 1}番手`;
+					const mark = p.finished ? "到達" : `マス${p.pos}`;
+					return `<li>${rank} - ${p.name} (${p.mbti}) : ${mark} / <span class="money">${formatMoney(p.money)}</span></li>`;
+				})
+				.join("");
+		}
+
+		function updateHud() {
+			const p = STATE.players[STATE.currentPlayerIndex];
+			el.hudName.textContent = p ? p.name : "-";
+			el.hudMbti.textContent = p ? p.mbti : "-";
+			el.hudPos.textContent = p ? `${p.pos} / 20` : "-";
+			el.hudRound.textContent = String(STATE.round);
+			el.hudMoney.textContent = p ? formatMoney(p.money) : "-";
+			if (p) {
+				el.turnStrip.textContent = `${p.name} (${p.mbti}) の手番です / 所持金 ${formatMoney(p.money)}`;
+			}
+			renderDdddControl(p);
+			updateStandings();
+		}
+
+		function mbtiHas(player, letter) {
+			return player.mbti.includes(letter);
+		}
+
+		function getNextPosition(current, player) {
+			if (current >= 20) return 20;
+
+			if (current === 4) return mbtiHas(player, "E") ? 5 : 7;
+			if (current === 5) return 6;
+			if (current === 6) return 9;
+			if (current === 7) return 8;
+			if (current === 8) return 9;
+
+			if (current === 10) return mbtiHas(player, "N") ? 11 : 13;
+			if (current === 11) return 12;
+			if (current === 12) return 15;
+			if (current === 13) return 14;
+			if (current === 14) return 15;
+
+			return Math.min(20, current + 1);
+		}
+
+		function eventFor(position, player) {
+			if (isDddd(player)) {
+				const cursed = {
+					2: "噂が広まり信頼ダウン。孤立感が増した。",
+					3: "チーム内の誤解で責任を背負わされる。",
+					5: "派手な失敗で評価が急落。",
+					8: "徹夜が祟って体調不良。",
+					10: "分岐先でトラブルに巻き込まれる。",
+					12: "アイデアが盗まれてしまう。",
+					14: "細かなミスが連鎖し炎上。",
+					16: "判断ミスで大きな機会損失。",
+					18: "締切に間に合わず違約金発生。",
+					19: "最終面接で大失言してしまう。",
+					20: "ゴールしたが後味最悪。厄運の勝利。"
+				};
+				return { text: cursed[position] || "厄イベントが発動し不運に見舞われた。", tone: "bad" };
+			}
+
+			const isE = mbtiHas(player, "E");
+			const isN = mbtiHas(player, "N");
+			const isT = mbtiHas(player, "T");
+			const isJ = mbtiHas(player, "J");
+
+			const defaults = {
+				1: { text: "新しい仲間と出会う。会話力が上がった気分。", tone: "good" },
+				2: { text: "知識を1つ習得。次の挑戦が少し楽しみに。", tone: "good" },
+				3: { text: "協力作業で役割を発見。自分の強みが見えた。", tone: "" },
+				4: { text: isE ? "分岐: 外向型のあなたは交流ルートへ。" : "分岐: 内向型のあなたは深掘りルートへ。", tone: "" },
+				5: { text: "人前で発表。拍手で自信アップ。", tone: "good" },
+				6: { text: "イベント運営に参加。人脈が一気に広がる。", tone: "good" },
+				7: { text: "一人で集中。スキルに磨きがかかる。", tone: "good" },
+				8: { text: "深夜の探究でブレイクスルー。", tone: "good" },
+				9: { text: "ルート合流。経験値を持ち寄って前進。", tone: "" },
+				10: { text: isN ? "分岐: 直感型のあなたは未来構想ルートへ。" : "分岐: 感覚型のあなたは現実設計ルートへ。", tone: "" },
+				11: { text: "大胆な発想がチームを驚かせる。", tone: "good" },
+				12: { text: "アイデアが連鎖。評価も上々。", tone: "good" },
+				13: { text: "地に足のついた改善で信頼を獲得。", tone: "good" },
+				14: { text: "丁寧な作業で安定成果。", tone: "good" },
+				15: { text: "再合流。今度は判断力が問われる。", tone: "" },
+				16: { text: isT ? "論理重視の判断で課題を解決。" : "共感重視の判断で関係を修復。", tone: "good" },
+				17: { text: "味方のサポートで調子が戻る。", tone: "good" },
+				18: { text: isJ ? "計画通りに締切突破。" : "柔軟に立ち回って締切セーフ。", tone: "good" },
+				19: { text: "最終面接。自分の物語を語る。", tone: "" },
+				20: { text: "ゴール! MBTIらしい選択で人生ゲームを完走。", tone: "good" }
+			};
+
+			return defaults[position] || { text: "静かな1ターン。", tone: "" };
+		}
+
+		function moneyEffectFor(position, player) {
+			if (isDddd(player)) {
+				const cursedMoney = {
+					2: -1200,
+					3: -1800,
+					5: -2200,
+					8: -2600,
+					10: -2000,
+					12: -2400,
+					14: -2100,
+					16: -2800,
+					18: -3000,
+					19: -3200,
+					20: -3500
+				};
+				return cursedMoney[position] ?? -1500;
+			}
+
+			const isE = mbtiHas(player, "E");
+			const isN = mbtiHas(player, "N");
+			const isT = mbtiHas(player, "T");
+			const isJ = mbtiHas(player, "J");
+
+			const base = {
+				1: 800,
+				2: 1200,
+				3: 500,
+				4: 0,
+				5: isE ? 1600 : 400,
+				6: 1800,
+				7: 1400,
+				8: isN ? 1800 : 900,
+				9: 700,
+				10: 0,
+				11: isN ? 2200 : 800,
+				12: 1500,
+				13: 1400,
+				14: isJ ? 1700 : 1000,
+				15: 600,
+				16: isT ? 1300 : 900,
+				17: 1000,
+				18: isJ ? 1800 : -700,
+				19: 900,
+				20: 5000
+			};
+
+			return base[position] ?? 0;
+		}
+
+		async function moveByAnimated(player, steps) {
+			for (let i = 0; i < steps; i += 1) {
+				const next = getNextPosition(player.pos, player);
+				player.pos = next;
+				renderBoard();
+				drawBoardPath();
+				await new Promise(resolve => setTimeout(resolve, 100));
+			}
+			if (player.pos >= 20) {
+				player.pos = 20;
+				if (!player.finished) {
+					player.finished = true;
+					STATE.finishedOrder.push(player.id);
+					player.finishedRank = STATE.finishedOrder.length;
+				}
+			}
+		}
+
+		function randomDie() {
+			return Math.floor(Math.random() * 6) + 1;
+		}
+
+		function showEvent(message, tone = "") {
+			el.eventBox.textContent = message;
+			el.eventBox.style.borderColor = tone === "bad" ? "#efc3c6" : "#f6dcc6";
+			el.eventBox.style.background = tone === "bad" ? "#fff3f4" : "#fff9f2";
+		}
+
+		function nextTurn() {
+			if (!STATE.players.length) return;
+
+			let nextIndex = STATE.currentPlayerIndex;
+			let safety = 0;
+			do {
+				nextIndex = (nextIndex + 1) % STATE.players.length;
+				safety += 1;
+				if (nextIndex === 0) STATE.round += 1;
+			} while (STATE.players[nextIndex].finished && safety <= STATE.players.length + 1);
+
+			STATE.currentPlayerIndex = nextIndex;
+		}
+
+		function everyoneFinished() {
+			return STATE.players.length > 0 && STATE.players.every((p) => p.finished);
+		}
+
+		function rollDiceAndPlay() {
+			if (everyoneFinished()) return;
+
+			const player = STATE.players[STATE.currentPlayerIndex];
+			if (!player || player.finished) {
+				nextTurn();
+				updateHud();
+				renderBoard();
+				return;
+			}
+
+			el.rollBtn.disabled = true;
+			el.diceWrap.classList.add("rolling");
+			let forcedTotal = null;
+			let forcedDest = null;
+
+			if (isDddd(player)) {
+				const options = ddddOptionsFor(player);
+				if (!options.length) {
+					el.rollBtn.disabled = false;
+					el.diceWrap.classList.remove("rolling");
+					showEvent("選択可能な厄マスが見つかりませんでした。", "bad");
+					return;
+				}
+				const picked = options[Math.floor(Math.random() * options.length)];
+				forcedTotal = picked.total;
+				forcedDest = picked.dest;
+			}
+
+			let ticks = 0;
+			const anim = setInterval(() => {
+				el.die1.textContent = randomDie();
+				el.die2.textContent = randomDie();
+				ticks += 1;
+
+				if (ticks > 8) {
+					clearInterval(anim);
+					let d1 = randomDie();
+					let d2 = randomDie();
+					let total = d1 + d2;
+
+					if (forcedTotal !== null) {
+						const pair = splitDice(forcedTotal);
+						d1 = pair[0];
+						d2 = pair[1];
+						total = forcedTotal;
+					}
+					el.die1.textContent = d1;
+					el.die2.textContent = d2;
+					el.diceTotal.textContent = total;
+					el.diceWrap.classList.remove("rolling");
+
+					STATE.turns += 1;
+					player.turnsTaken += 1;
+
+					// 駒の移動アニメーション
+					(async () => {
+						await moveByAnimated(player, total);
+						if (isDddd(player) && forcedDest !== null) {
+							player.pos = forcedDest;
+							renderBoard();
+							drawBoardPath();
+							await new Promise(resolve => setTimeout(resolve, 300));
+						}
+						const moneyDiff = moneyEffectFor(player.pos, player);
+						player.money = Math.max(0, player.money + moneyDiff);
+						updateHud();
+						renderBoard();
+
+						const event = eventFor(player.pos, player);
+						const moneyText = moneyDiff >= 0 ? `+${formatMoney(moneyDiff)}` : `-${formatMoney(Math.abs(moneyDiff))}`;
+						showEvent(`${player.name}: ${event.text} 所持金 ${moneyText}`.trim(), event.tone);
+						addLog(`Turn ${STATE.turns}: ${player.name} が ${d1} + ${d2} = ${total} でマス ${player.pos} に到着。${event.text} [${moneyText}]`, event.tone);
+
+						if (player.finished) {
+							addLog(`${player.name} (${player.mbti}) は ${player.finishedRank}位 でゴール!`, "good");
+							if (player.finishedRank === 1) {
+								el.goalBanner.textContent = `${player.name} が1位でゴールしました!`;
+								el.goalBanner.classList.remove("hidden");
+							}
+						}
+
+						if (everyoneFinished()) {
+							el.rollBtn.disabled = true;
+							showEvent("全員がゴールしました。順位ボードで結果を確認できます。", "good");
+						} else {
+							nextTurn();
+							updateHud();
+							renderBoard();
+							el.rollBtn.disabled = false;
+						}
+					})();
+				}
+			}, 85);
+		}
+
+		function startGame() {
+			const rows = [...el.playerManager.querySelectorAll(".player-row")];
+			const players = rows.map((row, idx) => {
+				const name = row.querySelector(".player-name").value.trim();
+				const mbti = row.querySelector(".player-mbti").value;
+				return {
+					id: idx + 1,
+					name,
+					mbti,
+					pos: 0,
+					money: 10000,
+					finished: false,
+					finishedRank: 0,
+					turnsTaken: 0,
+					color: PLAYER_COLORS[idx % PLAYER_COLORS.length]
+				};
+			});
+
+			if (players.length < 2) {
+				showEvent("2人以上のプレイヤーを登録してください。", "bad");
+				return;
+			}
+
+			if (players.some((p) => !p.name)) {
+				showEvent("全プレイヤーの名前を入力してください。", "bad");
+				return;
+			}
+
+			STATE.started = true;
+			STATE.turns = 0;
+			STATE.round = 1;
+			STATE.players = players;
+			STATE.currentPlayerIndex = 0;
+			STATE.finishedOrder = [];
+
+			el.setup.classList.add("hidden");
+			el.game.classList.remove("hidden");
+			el.goalBanner.classList.add("hidden");
+			el.goalBanner.textContent = "ゴール到達! あなたらしい人生ルートを完走しました。";
+			el.logList.innerHTML = "";
+			el.rollBtn.disabled = false;
+
+			updateHud();
+			renderBoard();
+			showEvent("ゲーム開始。先手プレイヤーから2個のサイコロを振って進みましょう。");
+			addLog(`ゲーム開始: ${players.map((p) => `${p.name}(${p.mbti})`).join(" / ")}`);
+		}
+
+		function resetGame() {
+			STATE.started = false;
+			STATE.turns = 0;
+			STATE.round = 1;
+			STATE.players = [];
+			STATE.currentPlayerIndex = 0;
+			STATE.finishedOrder = [];
+
+			el.setup.classList.remove("hidden");
+			el.game.classList.add("hidden");
+			el.playerManager.innerHTML = "";
+			createPlayerRow("Player1", "ENFP");
+			createPlayerRow("Player2", "ISTJ");
+			el.eventBox.textContent = "開始ボタンで冒険スタート。";
+			el.rollBtn.disabled = false;
+			el.goalBanner.classList.add("hidden");
+			el.logList.innerHTML = "";
+			addLog("ゲームをリセットしました。");
+		}
+
+		function init() {
+			createPlayerRow("Player1", "ENFP");
+			createPlayerRow("Player2", "ISTJ");
+			renderBoard();
+			el.startBtn.addEventListener("click", startGame);
+			el.addPlayerBtn.addEventListener("click", () => {
+				if (el.playerManager.children.length >= 6) {
+					showEvent("プレイヤーは最大6人までです。", "bad");
+					addLog("最大人数に到達しました。", "bad");
+					return;
+				}
+				createPlayerRow(`Player${el.playerManager.children.length + 1}`, "ENFP");
+			});
+			el.rollBtn.addEventListener("click", rollDiceAndPlay);
+			el.resetBtn.addEventListener("click", resetGame);
+		}
+
+		init();
+	</script>
+</body>
+</html>
