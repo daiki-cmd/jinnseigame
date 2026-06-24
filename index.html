@@ -278,6 +278,39 @@
 			flex-wrap: wrap;
 		}
 
+		.landing-branch {
+			margin-top: 10px;
+			padding: 10px;
+			border-radius: 10px;
+			background: #f6fbff;
+			border: 1px solid #d1e6f7;
+		}
+
+		.landing-branch.hidden {
+			display: none;
+		}
+
+		.landing-branch-title {
+			font-size: 0.82rem;
+			font-weight: 900;
+			color: #2c5f86;
+		}
+
+		.landing-branch-options {
+			margin-top: 6px;
+			display: grid;
+			gap: 4px;
+			font-size: 0.86rem;
+			color: #3f5f77;
+		}
+
+		.landing-branch-pick {
+			margin-top: 8px;
+			font-size: 0.85rem;
+			font-weight: 700;
+			color: #285f80;
+		}
+
 		.landing-money {
 			padding: 4px 9px;
 			border-radius: 999px;
@@ -613,6 +646,11 @@
 					<div class="landing-meta">
 						<span id="landingMoney" class="landing-money">所持金変化 -</span>
 					</div>
+					<div id="landingBranch" class="landing-branch hidden">
+						<div class="landing-branch-title">分岐情報</div>
+						<div id="landingBranchOptions" class="landing-branch-options"></div>
+						<div id="landingBranchPick" class="landing-branch-pick"></div>
+					</div>
 				</div>
 
 				<div class="standings">
@@ -664,6 +702,7 @@
 		const DDDD_BAD_TILES = new Set([2, 3, 5, 8, 10, 12, 14, 16, 18, 19, 20]);
 
 		const PLAYER_COLORS = ["#f07167", "#00a9a5", "#7678ed", "#f4a261", "#7cb518", "#c77dff"];
+		const LANDING_EFFECT_PAUSE_MS = 1400;
 
 		const STATE = {
 			started: false,
@@ -698,6 +737,9 @@
 			landingTitle: document.getElementById("landingTitle"),
 			landingEvent: document.getElementById("landingEvent"),
 			landingMoney: document.getElementById("landingMoney"),
+			landingBranch: document.getElementById("landingBranch"),
+			landingBranchOptions: document.getElementById("landingBranchOptions"),
+			landingBranchPick: document.getElementById("landingBranchPick"),
 			logList: document.getElementById("logList"),
 			goalBanner: document.getElementById("goalBanner"),
 			standingsList: document.getElementById("standingsList")
@@ -860,6 +902,9 @@
 				el.landingEvent.textContent = "サイコロを振ると、ここに停止したマスの効果が表示されます。";
 				el.landingMoney.textContent = "所持金変化 -";
 				el.landingMoney.className = "landing-money";
+				el.landingBranch.classList.add("hidden");
+				el.landingBranchOptions.innerHTML = "";
+				el.landingBranchPick.textContent = "";
 				return;
 			}
 
@@ -867,6 +912,40 @@
 			el.landingEvent.textContent = info.eventText;
 			el.landingMoney.textContent = `所持金変化 ${formatMoneyDiff(info.moneyDiff)}`;
 			el.landingMoney.className = `landing-money ${info.moneyDiff > 0 ? "good" : info.moneyDiff < 0 ? "bad" : ""}`.trim();
+
+			if (info.branchInfo) {
+				el.landingBranch.classList.remove("hidden");
+				el.landingBranchOptions.innerHTML = info.branchInfo.options
+					.map((o) => `<div>${o.label}: マス${o.dest + 1} ${o.tile} (条件: ${o.condition})</div>`)
+					.join("");
+				el.landingBranchPick.textContent = `${info.playerName} (${info.playerMbti}) は ${info.branchInfo.chosen.label} なので、次はマス${info.branchInfo.chosen.dest + 1} ${info.branchInfo.chosen.tile} に進みます。`;
+			} else {
+				el.landingBranch.classList.add("hidden");
+				el.landingBranchOptions.innerHTML = "";
+				el.landingBranchPick.textContent = "";
+			}
+		}
+
+		function branchInfoFor(position, player) {
+			if (position === 4) {
+				const options = [
+					{ label: "Eルート", dest: 5, tile: TILES[5].title, condition: "Eを含む" },
+					{ label: "Iルート", dest: 7, tile: TILES[7].title, condition: "Eを含まない" }
+				];
+				const chosen = mbtiHas(player, "E") ? options[0] : options[1];
+				return { options, chosen };
+			}
+
+			if (position === 10) {
+				const options = [
+					{ label: "Nルート", dest: 11, tile: TILES[11].title, condition: "Nを含む" },
+					{ label: "Sルート", dest: 13, tile: TILES[13].title, condition: "Nを含まない" }
+				];
+				const chosen = mbtiHas(player, "N") ? options[0] : options[1];
+				return { options, chosen };
+			}
+
+			return null;
 		}
 
 		function isDddd(player) {
@@ -1073,6 +1152,10 @@
 			return Math.floor(Math.random() * 6) + 1;
 		}
 
+		function wait(ms) {
+			return new Promise((resolve) => setTimeout(resolve, ms));
+		}
+
 		function showEvent(message, tone = "") {
 			el.eventBox.textContent = message;
 			el.eventBox.style.borderColor = tone === "bad" ? "#efc3c6" : "#f6dcc6";
@@ -1170,10 +1253,12 @@
 						const moneyText = formatMoneyDiff(moneyDiff);
 						STATE.lastLanding = {
 							playerName: player.name,
+							playerMbti: player.mbti,
 							position: player.pos,
 							title: TILES[player.pos].title,
 							eventText: event.text,
-							moneyDiff
+							moneyDiff,
+							branchInfo: branchInfoFor(player.pos, player)
 						};
 						renderLandingDetail();
 						showEvent(`${player.name}: ${event.text} 所持金 ${moneyText}`.trim(), event.tone);
@@ -1191,6 +1276,8 @@
 							el.rollBtn.disabled = true;
 							showEvent("全員がゴールしました。順位ボードで結果を確認できます。", "good");
 						} else {
+							el.turnStrip.textContent = `${player.name} の停止効果を確認中...`;
+							await wait(LANDING_EFFECT_PAUSE_MS);
 							nextTurn();
 							updateHud();
 							renderBoard();
