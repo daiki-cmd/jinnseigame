@@ -42,6 +42,11 @@
 			padding: 20px;
 		}
 
+		body.in-game {
+			overflow: hidden;
+			padding: 12px;
+		}
+
 		.shell {
 			max-width: 1080px;
 			margin: 0 auto;
@@ -49,6 +54,11 @@
 			grid-template-columns: 1.1fr 0.9fr;
 			gap: 18px;
 			animation: fadeIn 500ms ease;
+		}
+
+		body.in-game .shell {
+			max-width: 1280px;
+			grid-template-columns: 1fr;
 		}
 
 		.card {
@@ -85,10 +95,25 @@
 			padding: 18px 22px 22px;
 		}
 
+		body.in-game .hero {
+			display: none;
+		}
+
+		body.in-game .game {
+			padding: 12px 14px 14px;
+		}
+
 		.row {
 			display: grid;
 			gap: 12px;
 			grid-template-columns: 1fr 1fr;
+		}
+
+		.action-row {
+			display: grid;
+			gap: 10px;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			margin-bottom: 10px;
 		}
 
 		.player-manager {
@@ -190,6 +215,11 @@
 			margin-bottom: 14px;
 		}
 
+		body.in-game .hud {
+			gap: 6px;
+			margin-bottom: 10px;
+		}
+
 		.pill {
 			background: #fff;
 			border: 1px solid #e8dff2;
@@ -200,6 +230,11 @@
 			flex-direction: column;
 			justify-content: center;
 			gap: 4px;
+		}
+
+		body.in-game .pill {
+			min-height: 64px;
+			padding: 8px;
 		}
 
 		.pill small {
@@ -220,6 +255,10 @@
 			gap: 8px;
 			margin: 8px 0 14px;
 			font-weight: 900;
+		}
+
+		body.in-game .dice {
+			margin: 4px 0 8px;
 		}
 
 		.die {
@@ -247,6 +286,12 @@
 			color: #6b4a1a;
 			margin-bottom: 12px;
 			min-height: 66px;
+		}
+
+		body.in-game .event {
+			padding: 10px;
+			min-height: 54px;
+			margin-bottom: 8px;
 		}
 
 		.landing-detail {
@@ -355,13 +400,19 @@
 			position: relative;
 		}
 
+		body.in-game .board {
+			gap: 8px;
+			margin-top: 0;
+			padding: 10px;
+		}
+
 
 
 		.tile {
 			background: linear-gradient(180deg, var(--road), #fff6e8);
 			border: 1px solid #e8cfaa;
 			border-radius: 12px;
-			min-height: 78px;
+			min-height: clamp(54px, 8.3vh, 78px);
 			padding: 8px;
 			display: flex;
 			flex-direction: column;
@@ -470,6 +521,33 @@
 				linear-gradient(180deg, rgba(255, 255, 255, 0.8), rgba(248, 245, 255, 0.8));
 		}
 
+		.log-modal {
+			position: fixed;
+			inset: 0;
+			background: rgba(30, 22, 46, 0.36);
+			display: grid;
+			place-items: center;
+			z-index: 20;
+			padding: 16px;
+		}
+
+		.log-modal .logs {
+			width: min(840px, 94vw);
+			max-height: min(82vh, 760px);
+		}
+
+		.logs-head {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 8px;
+			margin-bottom: 8px;
+		}
+
+		.logs-head h2 {
+			margin: 0;
+		}
+
 		.logs h2 {
 			margin: 0 0 8px;
 			font-size: 1.05rem;
@@ -515,6 +593,10 @@
 			border-radius: 12px;
 			border: 1px solid #e7deef;
 			background: #fff;
+		}
+
+		body.in-game .standings {
+			display: none;
 		}
 
 		.standings h3 {
@@ -580,6 +662,10 @@
 				grid-template-columns: 1fr;
 			}
 
+			.action-row {
+				grid-template-columns: 1fr;
+			}
+
 			.board {
 				grid-template-columns: repeat(3, 1fr);
 			}
@@ -631,8 +717,9 @@
 
 				<div id="eventBox" class="event">開始ボタンで冒険スタート。</div>
 
-				<div class="row" style="margin-bottom: 10px;">
+				<div class="action-row">
 					<button id="rollBtn" class="btn-main" type="button">サイコロを2個ふる</button>
+					<button id="openLogBtn" class="btn-soft" type="button">ログを開く</button>
 					<button id="resetBtn" class="btn-sub" type="button">最初からやり直す</button>
 				</div>
 
@@ -660,11 +747,16 @@
 			</section>
 		</section>
 
-		<aside class="card logs" id="logs">
-			<h2>プレイログ</h2>
-			<p class="meta" style="margin: 0 0 8px;">同じマスではコマが重なって表示され、右の +N で人数が分かります。</p>
-			<div id="logList"></div>
-		</aside>
+		<div id="logModal" class="log-modal hidden">
+			<aside class="card logs" id="logs">
+				<div class="logs-head">
+					<h2>プレイログ</h2>
+					<button id="closeLogBtn" class="btn-sub" type="button">閉じる</button>
+				</div>
+				<p class="meta" style="margin: 0 0 8px;">同じマスではコマが重なって表示され、右の +N で人数が分かります。</p>
+				<div id="logList"></div>
+			</aside>
+		</div>
 	</main>
 
 	<script>
@@ -721,6 +813,8 @@
 			addPlayerBtn: document.getElementById("addPlayerBtn"),
 			startBtn: document.getElementById("startBtn"),
 			rollBtn: document.getElementById("rollBtn"),
+			openLogBtn: document.getElementById("openLogBtn"),
+			closeLogBtn: document.getElementById("closeLogBtn"),
 			resetBtn: document.getElementById("resetBtn"),
 			hudName: document.getElementById("hudName"),
 			hudMbti: document.getElementById("hudMbti"),
@@ -740,6 +834,7 @@
 			landingBranch: document.getElementById("landingBranch"),
 			landingBranchOptions: document.getElementById("landingBranchOptions"),
 			landingBranchPick: document.getElementById("landingBranchPick"),
+			logModal: document.getElementById("logModal"),
 			logList: document.getElementById("logList"),
 			goalBanner: document.getElementById("goalBanner"),
 			standingsList: document.getElementById("standingsList")
@@ -1326,9 +1421,11 @@
 
 			el.setup.classList.add("hidden");
 			el.game.classList.remove("hidden");
+			document.body.classList.add("in-game");
 			el.goalBanner.classList.add("hidden");
 			el.goalBanner.textContent = "ゴール到達! あなたらしい人生ルートを完走しました。";
 			el.logList.innerHTML = "";
+			el.logModal.classList.add("hidden");
 			el.rollBtn.disabled = false;
 
 			updateHud();
@@ -1349,6 +1446,7 @@
 
 			el.setup.classList.remove("hidden");
 			el.game.classList.add("hidden");
+			document.body.classList.remove("in-game");
 			el.playerManager.innerHTML = "";
 			createPlayerRow("Player1", "ENFP");
 			createPlayerRow("Player2", "ISTJ");
@@ -1356,6 +1454,7 @@
 			el.rollBtn.disabled = false;
 			el.goalBanner.classList.add("hidden");
 			el.logList.innerHTML = "";
+			el.logModal.classList.add("hidden");
 			renderLandingDetail();
 			addLog("ゲームをリセットしました。");
 		}
@@ -1375,6 +1474,17 @@
 				createPlayerRow(`Player${el.playerManager.children.length + 1}`, "ENFP");
 			});
 			el.rollBtn.addEventListener("click", rollDiceAndPlay);
+			el.openLogBtn.addEventListener("click", () => {
+				el.logModal.classList.remove("hidden");
+			});
+			el.closeLogBtn.addEventListener("click", () => {
+				el.logModal.classList.add("hidden");
+			});
+			el.logModal.addEventListener("click", (event) => {
+				if (event.target === el.logModal) {
+					el.logModal.classList.add("hidden");
+				}
+			});
 			el.resetBtn.addEventListener("click", resetGame);
 		}
 
