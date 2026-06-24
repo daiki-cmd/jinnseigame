@@ -249,6 +249,54 @@
 			min-height: 66px;
 		}
 
+		.landing-detail {
+			margin-top: 10px;
+			border-radius: 14px;
+			padding: 12px;
+			background: #fff;
+			border: 1px solid #e8dff2;
+		}
+
+		.landing-detail h3 {
+			margin: 0;
+			font-size: 0.92rem;
+			color: #4f3f66;
+		}
+
+		.landing-event {
+			margin-top: 6px;
+			font-size: 0.9rem;
+			color: #5a4b70;
+			line-height: 1.45;
+		}
+
+		.landing-meta {
+			margin-top: 8px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+
+		.landing-money {
+			padding: 4px 9px;
+			border-radius: 999px;
+			font-weight: 900;
+			font-size: 0.8rem;
+			background: #f8f3ff;
+			color: #5f3d89;
+		}
+
+		.landing-money.good {
+			background: #e9faef;
+			color: #217145;
+		}
+
+		.landing-money.bad {
+			background: #fff0f1;
+			color: #9a3a44;
+		}
+
 		.turn-strip {
 			margin: 10px 0 14px;
 			padding: 10px 12px;
@@ -291,17 +339,7 @@
 		}
 
 		.tile::before {
-			content: "";
-			position: absolute;
-			left: -10px;
-			right: -10px;
-			top: 50%;
-			height: 4px;
-			transform: translateY(-50%);
-			background:
-				repeating-linear-gradient(90deg, var(--road-line) 0, var(--road-line) 10px, transparent 10px, transparent 18px);
-			opacity: 0.45;
-			pointer-events: none;
+			content: none;
 		}
 
 		.tile .n {
@@ -569,6 +607,14 @@
 
 				<div id="board" class="board"></div>
 
+				<div class="landing-detail" id="landingDetail">
+					<h3 id="landingTitle">停止マスの効果</h3>
+					<div id="landingEvent" class="landing-event">サイコロを振ると、ここに停止したマスの効果が表示されます。</div>
+					<div class="landing-meta">
+						<span id="landingMoney" class="landing-money">所持金変化 -</span>
+					</div>
+				</div>
+
 				<div class="standings">
 					<h3>順位ボード</h3>
 					<ul id="standingsList"></ul>
@@ -625,7 +671,8 @@
 			round: 1,
 			players: [],
 			currentPlayerIndex: 0,
-			finishedOrder: []
+			finishedOrder: [],
+			lastLanding: null
 		};
 
 		const el = {
@@ -648,6 +695,9 @@
 			diceTotal: document.getElementById("diceTotal"),
 			eventBox: document.getElementById("eventBox"),
 			board: document.getElementById("board"),
+			landingTitle: document.getElementById("landingTitle"),
+			landingEvent: document.getElementById("landingEvent"),
+			landingMoney: document.getElementById("landingMoney"),
 			logList: document.getElementById("logList"),
 			goalBanner: document.getElementById("goalBanner"),
 			standingsList: document.getElementById("standingsList")
@@ -797,6 +847,26 @@
 
 		function formatMoney(value) {
 			return `${value.toLocaleString("ja-JP")} G`;
+		}
+
+		function formatMoneyDiff(value) {
+			return value >= 0 ? `+${formatMoney(value)}` : `-${formatMoney(Math.abs(value))}`;
+		}
+
+		function renderLandingDetail() {
+			const info = STATE.lastLanding;
+			if (!info) {
+				el.landingTitle.textContent = "停止マスの効果";
+				el.landingEvent.textContent = "サイコロを振ると、ここに停止したマスの効果が表示されます。";
+				el.landingMoney.textContent = "所持金変化 -";
+				el.landingMoney.className = "landing-money";
+				return;
+			}
+
+			el.landingTitle.textContent = `${info.playerName} が止まったマス: ${info.position + 1}. ${info.title}`;
+			el.landingEvent.textContent = info.eventText;
+			el.landingMoney.textContent = `所持金変化 ${formatMoneyDiff(info.moneyDiff)}`;
+			el.landingMoney.className = `landing-money ${info.moneyDiff > 0 ? "good" : info.moneyDiff < 0 ? "bad" : ""}`.trim();
 		}
 
 		function isDddd(player) {
@@ -1097,7 +1167,15 @@
 						renderBoard();
 
 						const event = eventFor(player.pos, player);
-						const moneyText = moneyDiff >= 0 ? `+${formatMoney(moneyDiff)}` : `-${formatMoney(Math.abs(moneyDiff))}`;
+						const moneyText = formatMoneyDiff(moneyDiff);
+						STATE.lastLanding = {
+							playerName: player.name,
+							position: player.pos,
+							title: TILES[player.pos].title,
+							eventText: event.text,
+							moneyDiff
+						};
+						renderLandingDetail();
 						showEvent(`${player.name}: ${event.text} 所持金 ${moneyText}`.trim(), event.tone);
 						addLog(`Turn ${STATE.turns}: ${player.name} が ${d1} + ${d2} = ${total} でマス ${player.pos} に到着。${event.text} [${moneyText}]`, event.tone);
 
@@ -1157,6 +1235,7 @@
 			STATE.players = players;
 			STATE.currentPlayerIndex = 0;
 			STATE.finishedOrder = [];
+			STATE.lastLanding = null;
 
 			el.setup.classList.add("hidden");
 			el.game.classList.remove("hidden");
@@ -1167,6 +1246,7 @@
 
 			updateHud();
 			renderBoard();
+			renderLandingDetail();
 			showEvent("ゲーム開始。先手プレイヤーから2個のサイコロを振って進みましょう。");
 			addLog(`ゲーム開始: ${players.map((p) => `${p.name}(${p.mbti})`).join(" / ")}`);
 		}
@@ -1178,6 +1258,7 @@
 			STATE.players = [];
 			STATE.currentPlayerIndex = 0;
 			STATE.finishedOrder = [];
+			STATE.lastLanding = null;
 
 			el.setup.classList.remove("hidden");
 			el.game.classList.add("hidden");
@@ -1188,6 +1269,7 @@
 			el.rollBtn.disabled = false;
 			el.goalBanner.classList.add("hidden");
 			el.logList.innerHTML = "";
+			renderLandingDetail();
 			addLog("ゲームをリセットしました。");
 		}
 
@@ -1195,6 +1277,7 @@
 			createPlayerRow("Player1", "ENFP");
 			createPlayerRow("Player2", "ISTJ");
 			renderBoard();
+			renderLandingDetail();
 			el.startBtn.addEventListener("click", startGame);
 			el.addPlayerBtn.addEventListener("click", () => {
 				if (el.playerManager.children.length >= 6) {
