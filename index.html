@@ -101,6 +101,67 @@
 
 		body.in-game .game {
 			padding: 12px 14px 14px;
+			height: calc(100vh - 26px);
+			overflow: hidden;
+		}
+
+		.game-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.75fr);
+			gap: 12px;
+			min-height: 0;
+			height: calc(100% - 78px);
+		}
+
+		.board-panel,
+		.control-panel {
+			min-width: 0;
+			border-radius: 16px;
+		}
+
+		.board-panel {
+			padding: 12px;
+			background: linear-gradient(145deg, #fffaf0, #f8f1e3);
+			border: 1px solid #eadbc2;
+			display: flex;
+			flex-direction: column;
+			min-height: 0;
+		}
+
+		.board-scroll {
+			flex: 1;
+			min-height: 0;
+			overflow: auto;
+			overscroll-behavior: contain;
+			scrollbar-gutter: stable;
+			border-radius: 14px;
+		}
+
+		.board-heading {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			margin-bottom: 8px;
+		}
+
+		.board-heading h2 {
+			margin: 0;
+			font: 900 1rem "Yusei Magic", sans-serif;
+		}
+
+		.board-legend {
+			font-size: 0.72rem;
+			font-weight: 700;
+			color: #7a5f3c;
+		}
+
+		.control-panel {
+			padding: 12px;
+			background: #fbf9ff;
+			border: 1px solid #e8dff2;
+			overflow-y: auto;
+			max-height: calc(100vh - 132px);
 		}
 
 		.row {
@@ -386,11 +447,11 @@
 		}
 
 		.board {
-			display: grid;
-			grid-template-columns: repeat(5, 1fr);
+			display: block;
 			gap: 10px;
 			margin-top: 8px;
-			padding: 14px;
+			padding: 9px;
+			min-width: 720px;
 			border-radius: 16px;
 			background:
 				radial-gradient(circle at 6% 4%, rgba(255, 255, 255, 0.8), transparent 30%),
@@ -400,10 +461,54 @@
 			position: relative;
 		}
 
+		.route-row {
+			display: grid;
+			grid-template-columns: repeat(5, minmax(0, 1fr));
+			gap: 5px;
+			margin-bottom: 5px;
+		}
+
+		.route-row.reverse { direction: rtl; }
+		.route-row.reverse .tile { direction: ltr; }
+
+		.branch-stage {
+			display: grid;
+			grid-template-columns: minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 1fr) minmax(0, 0.9fr);
+			grid-template-areas: "entry upper-a upper-b merge" "entry lower-a lower-b merge";
+			gap: 5px;
+			margin: 7px 3%;
+			position: relative;
+		}
+
+		.branch-stage .lane-entry { grid-area: entry; align-self: center; }
+		.branch-stage .lane-upper-a { grid-area: upper-a; }
+		.branch-stage .lane-upper-b { grid-area: upper-b; }
+		.branch-stage .lane-lower-a { grid-area: lower-a; }
+		.branch-stage .lane-lower-b { grid-area: lower-b; }
+		.branch-stage .lane-merge { grid-area: merge; align-self: center; }
+
+		.branch-label {
+			position: absolute;
+			left: calc(25% - 42px);
+			font-size: 0.68rem;
+			font-weight: 900;
+			padding: 3px 7px;
+			border-radius: 999px;
+			background: #edf7f7;
+			color: #286c6d;
+		}
+
+		.branch-label.upper { top: 14%; }
+		.branch-label.lower { bottom: 14%; }
+		.branch-stage.reverse { direction: rtl; margin: 7px 3%; }
+		.branch-stage.reverse .tile { direction: ltr; }
+		.branch-stage.reverse .branch-label { left: auto; right: calc(25% - 42px); direction: ltr; }
+
 		body.in-game .board {
 			gap: 8px;
 			margin-top: 0;
 			padding: 10px;
+			flex: 1;
 		}
 
 
@@ -412,11 +517,11 @@
 			background: linear-gradient(180deg, var(--road), #fff6e8);
 			border: 1px solid #e8cfaa;
 			border-radius: 12px;
-			min-height: clamp(54px, 8.3vh, 78px);
-			padding: 8px;
+			min-height: 48px;
+			padding: 6px;
 			display: flex;
 			flex-direction: column;
-			gap: 4px;
+			gap: 2px;
 			position: relative;
 			transition: transform 180ms ease, border-color 180ms ease;
 			box-shadow: inset 0 -3px 0 rgba(146, 108, 61, 0.1);
@@ -427,13 +532,13 @@
 		}
 
 		.tile .n {
-			font-size: 0.74rem;
+			font-size: 0.66rem;
 			color: #7a5f3c;
 			font-weight: 700;
 		}
 
 		.tile .t {
-			font-size: 0.82rem;
+			font-size: 0.74rem;
 			font-weight: 700;
 			line-height: 1.2;
 			color: #5a4124;
@@ -444,12 +549,12 @@
 			align-items: center;
 			gap: 0;
 			margin-top: auto;
-			min-height: 24px;
+			min-height: 18px;
 		}
 
 		.token {
-			width: 22px;
-			height: 22px;
+			width: 18px;
+			height: 18px;
 			border-radius: 999px;
 			display: grid;
 			place-items: center;
@@ -486,6 +591,29 @@
 			border-color: #f58831;
 			transform: translateY(-2px);
 			box-shadow: 0 6px 14px rgba(245, 136, 49, 0.3);
+		}
+
+		.tile.move-target {
+			border-color: #36a2a3;
+			box-shadow: 0 0 0 4px rgba(54, 162, 163, 0.18);
+		}
+
+		.moving-token {
+			position: absolute;
+			left: 0;
+			top: 0;
+			z-index: 8;
+			width: 30px;
+			height: 30px;
+			border-radius: 50%;
+			display: grid;
+			place-items: center;
+			font-size: 0.72rem;
+			font-weight: 900;
+			color: #fff;
+			border: 3px solid #fff;
+			box-shadow: 0 8px 18px rgba(33, 26, 53, 0.34);
+			pointer-events: none;
 		}
 
 		.tile.goal {
@@ -642,12 +770,36 @@
 			to { opacity: 1; transform: translateY(0); }
 		}
 
+		@media (prefers-reduced-motion: reduce) {
+			.moving-token { display: none; }
+		}
+
 		@media (max-width: 940px) {
 			.shell {
 				grid-template-columns: 1fr;
 			}
 
 			.logs {
+				max-height: none;
+			}
+
+			body.in-game {
+				overflow: auto;
+			}
+
+			body.in-game .game {
+				height: auto;
+				overflow: visible;
+			}
+
+			.game-layout {
+				grid-template-columns: 1fr;
+				height: auto;
+			}
+
+			.board-scroll { max-height: 68vh; }
+
+			.control-panel {
 				max-height: none;
 			}
 		}
@@ -666,9 +818,9 @@
 				grid-template-columns: 1fr;
 			}
 
-			.board {
-				grid-template-columns: repeat(3, 1fr);
-			}
+			.route-row { grid-template-columns: repeat(5, minmax(72px, 1fr)); }
+			.branch-stage,
+			.branch-stage.reverse { min-width: 520px; margin: 7px 18px; }
 
 			.player-row {
 				grid-template-columns: 1fr;
@@ -700,12 +852,23 @@
 				<div class="hud">
 					<div class="pill"><small>手番プレイヤー</small><strong id="hudName">-</strong></div>
 					<div class="pill"><small>MBTI</small><strong id="hudMbti">-</strong></div>
-					<div class="pill"><small>現在地</small><strong id="hudPos">0 / 20</strong></div>
+					<div class="pill"><small>現在地</small><strong id="hudPos">0 / 26</strong></div>
 					<div class="pill"><small>ラウンド</small><strong id="hudRound">1</strong></div>
 					<div class="pill"><small>所持金</small><strong id="hudMoney">0 G</strong></div>
 				</div>
 
-				<div id="turnStrip" class="turn-strip">手番を準備中...</div>
+				<div class="game-layout">
+					<section class="board-panel" aria-label="人生ゲームの全体盤面">
+						<div class="board-heading">
+							<h2>人生マップ</h2>
+						</div>
+						<div class="board-scroll" tabindex="0" aria-label="盤面。縦横にスクロールできます">
+							<div id="board" class="board"></div>
+						</div>
+					</section>
+
+					<section class="control-panel" aria-label="サイコロとイベント情報">
+						<div id="turnStrip" class="turn-strip">手番を準備中...</div>
 
 				<div id="diceWrap" class="dice">
 					<div id="die1" class="die">1</div>
@@ -725,8 +888,6 @@
 
 				<div id="goalBanner" class="goal-banner hidden">ゴール到達! あなたらしい人生ルートを完走しました。</div>
 
-				<div id="board" class="board"></div>
-
 				<div class="landing-detail" id="landingDetail">
 					<h3 id="landingTitle">停止マスの効果</h3>
 					<div id="landingEvent" class="landing-event">サイコロを振ると、ここに停止したマスの効果が表示されます。</div>
@@ -743,6 +904,8 @@
 				<div class="standings">
 					<h3>順位ボード</h3>
 					<ul id="standingsList"></ul>
+				</div>
+					</section>
 				</div>
 			</section>
 		</section>
@@ -778,20 +941,40 @@
 			{ id: 7, title: "Iルート: 集中タイム" },
 			{ id: 8, title: "Iルート: 深掘り研究" },
 			{ id: 9, title: "合流ポイントA" },
-			{ id: 10, title: "視点の分岐", branch: true },
-			{ id: 11, title: "Nルート: 未来アイデア" },
-			{ id: 12, title: "Nルート: ひらめき爆発" },
-			{ id: 13, title: "Sルート: 現実プラン" },
-			{ id: 14, title: "Sルート: 実務の達人" },
-			{ id: 15, title: "合流ポイントB" },
-			{ id: 16, title: "判断の試練" },
-			{ id: 17, title: "感情ケアの時間" },
-			{ id: 18, title: "締切ラッシュ" },
-			{ id: 19, title: "運命の最終面接" },
-			{ id: 20, title: "ゴール", goal: true }
+			{ id: 10, title: "キャンパスの小休止" },
+			{ id: 11, title: "判断の試練" },
+			{ id: 12, title: "感情ケアの時間" },
+			{ id: 13, title: "締切ラッシュ" },
+			{ id: 14, title: "進路の準備" },
+			{ id: 15, title: "視点の分岐", branch: true },
+			{ id: 16, title: "Nルート: 未来アイデア" },
+			{ id: 17, title: "Nルート: ひらめき爆発" },
+			{ id: 18, title: "Sルート: 現実プラン" },
+			{ id: 19, title: "Sルート: 実務の達人" },
+			{ id: 20, title: "合流ポイントB" },
+			{ id: 21, title: "単位チェック" },
+			{ id: 22, title: "生活費のピンチ" },
+			{ id: 23, title: "先延ばしの代償" },
+			{ id: 24, title: "奨学金の返済" },
+			{ id: 25, title: "仕事の段取り" },
+			{ id: 26, title: "身だしなみ面談" },
+			{ id: 27, title: "カード請求日" },
+			{ id: 28, title: "人生の立て直し" },
+			{ id: 29, title: "最後の締切" },
+			{ id: 30, title: "ゴール", goal: true }
 		];
 
-		const DDDD_BAD_TILES = new Set([2, 3, 5, 8, 10, 12, 14, 16, 18, 19, 20]);
+		const BOARD_END = TILES.length - 1;
+		const DDDD_BAD_TILES = new Set([2, 4, 5, 8, 10, 12, 15, 17, 19, 22, 24, 26, 28, 30]);
+		const BOARD_STEPS = [0, 1, 2, 3, 4, 5, 6, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26];
+		const BOARD_EDGES = [
+			[0, 1], [1, 2], [2, 3], [3, 4],
+			[4, 5], [5, 6], [6, 9], [4, 7], [7, 8], [8, 9],
+			[9, 10], [10, 11], [11, 12], [12, 13], [13, 14], [14, 15],
+			[15, 16], [16, 17], [17, 20], [15, 18], [18, 19], [19, 20], [20, 21],
+			[21, 22], [22, 23], [23, 24], [24, 25], [25, 26], [26, 27],
+			[27, 28], [28, 29], [29, 30]
+		];
 
 		const PLAYER_COLORS = ["#f07167", "#00a9a5", "#7678ed", "#f4a261", "#7cb518", "#c77dff"];
 		const LANDING_EFFECT_PAUSE_MS = 1400;
@@ -875,21 +1058,10 @@
 				tilePlayersMap.get(p.pos).push(p);
 			}
 
-			const displayOrder = [
-				[0, 1, 2, 3, 4],
-				[9, 8, 7, 6, 5],
-				[10, 11, 12, 13, 14],
-				[19, 18, 17, 16, 15],
-				[20]
-			];
-
 			const current = STATE.players[STATE.currentPlayerIndex];
-
-			let html = "";
-			for (const row of displayOrder) {
-				for (const tileId of row) {
+			const tileMarkup = (tileId, extraClass = "") => {
 					const tile = TILES[tileId];
-					const classes = ["tile"];
+					const classes = ["tile", extraClass].filter(Boolean);
 					if (current && tile.id === current.pos) classes.push("current");
 					if (tile.goal) classes.push("goal");
 					if (tile.branch) classes.push("branch");
@@ -903,75 +1075,82 @@
 					const hiddenNames = hiddenCount ? herePlayers.slice(3).map((p) => p.name).join(", ") : "";
 					const more = hiddenCount ? `<span class="token-more" title="${hiddenNames}">+${hiddenCount}</span>` : "";
 					const tokens = visible + more;
-					html += `
+					return `
 						<div class="${classes.join(" ")}" data-id="${tile.id}">
-							<span class="n">${tile.id + 1}</span>
+							<span class="n">${BOARD_STEPS[tile.id] === 0 ? "START" : `${BOARD_STEPS[tile.id]}マス目`}</span>
 							<span class="t">${tile.title}</span>
 							<div class="tokens">${tokens}</div>
 						</div>
 					`;
-				}
-			}
+			};
+
+			const rowMarkup = (ids, reverse = false) => `
+				<div class="route-row ${reverse ? "reverse" : ""}">${ids.map((id) => tileMarkup(id)).join("")}</div>
+			`;
+			const branchMarkup = (entryId, upperIds, lowerIds, mergeId, upperLabel, lowerLabel, reverse = false) => `
+				<div class="branch-stage ${reverse ? "reverse" : ""}">
+					<span class="branch-label upper">${upperLabel}</span>
+					<span class="branch-label lower">${lowerLabel}</span>
+					${tileMarkup(entryId, "lane-entry")}
+					${tileMarkup(upperIds[0], "lane-upper-a")}
+					${tileMarkup(upperIds[1], "lane-upper-b")}
+					${tileMarkup(lowerIds[0], "lane-lower-a")}
+					${tileMarkup(lowerIds[1], "lane-lower-b")}
+					${tileMarkup(mergeId, "lane-merge")}
+				</div>
+			`;
+
+			const html = [
+				rowMarkup([0, 1, 2, 3]),
+				branchMarkup(4, [5, 6], [7, 8], 9, "Eルート", "Iルート"),
+				rowMarkup([10, 11, 12, 13, 14], true),
+				branchMarkup(15, [16, 17], [18, 19], 20, "Nルート", "Sルート"),
+				rowMarkup([21, 22, 23, 24, 25]),
+				rowMarkup([26, 27, 28, 29, 30], true)
+			].join("");
 			el.board.innerHTML = html;
 			drawBoardPath();
 		}
 
 		function drawBoardPath() {
-			// タイル要素を取得してマップ化
 			const tiles = Array.from(el.board.querySelectorAll(".tile"));
 			const tileMap = new Map(tiles.map(t => [parseInt(t.dataset.id), t]));
+			const boardRect = el.board.getBoundingClientRect();
+			const oldSvg = el.board.querySelector("svg");
+			if (oldSvg) oldSvg.remove();
+			const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+			svg.setAttribute("width", "100%");
+			svg.setAttribute("height", "100%");
+			svg.setAttribute("viewBox", `0 0 ${el.board.offsetWidth} ${el.board.offsetHeight}`);
+			svg.setAttribute("preserveAspectRatio", "none");
+			svg.style.position = "absolute";
+			svg.style.inset = "0";
+			svg.style.pointerEvents = "none";
+			svg.style.zIndex = "0";
 
-			// パスの座標を計算（tile.idの順序で）
-			const pathPoints = [];
-			for (let tileId = 0; tileId < TILES.length; tileId++) {
-				const tile = tileMap.get(tileId);
-				if (tile) {
-					const rect = tile.getBoundingClientRect();
-					const boardRect = el.board.getBoundingClientRect();
-					const x = rect.left - boardRect.left + rect.width / 2;
-					const y = rect.top - boardRect.top + rect.height / 2;
-					pathPoints.push([x, y]);
-				}
-			}
-
-			// SVGパスを生成
-			if (pathPoints.length > 1) {
-				let pathD = `M ${pathPoints[0][0]} ${pathPoints[0][1]}`;
-				for (let i = 1; i < pathPoints.length; i++) {
-					pathD += ` L ${pathPoints[i][0]} ${pathPoints[i][1]}`;
-				}
-
-				// 既存のSVGを削除
-				const oldSvg = el.board.querySelector("svg");
-				if (oldSvg) oldSvg.remove();
-
-				// 新しいSVGを作成
-				const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-				svg.setAttribute("width", "100%");
-				svg.setAttribute("height", "100%");
-				svg.setAttribute("viewBox", `0 0 ${el.board.offsetWidth} ${el.board.offsetHeight}`);
-				svg.setAttribute("preserveAspectRatio", "none");
-				svg.style.position = "absolute";
-				svg.style.inset = "0";
-				svg.style.pointerEvents = "none";
-				svg.style.zIndex = "0";
-
+			for (const [fromId, toId] of BOARD_EDGES) {
+				const fromTile = tileMap.get(fromId);
+				const toTile = tileMap.get(toId);
+				if (!fromTile || !toTile) continue;
+				const fromRect = fromTile.getBoundingClientRect();
+				const toRect = toTile.getBoundingClientRect();
+				const x1 = fromRect.left - boardRect.left + fromRect.width / 2;
+				const y1 = fromRect.top - boardRect.top + fromRect.height / 2;
+				const x2 = toRect.left - boardRect.left + toRect.width / 2;
+				const y2 = toRect.top - boardRect.top + toRect.height / 2;
 				const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-				path.setAttribute("d", pathD);
-				path.setAttribute("stroke", "#000");
-				path.setAttribute("stroke-width", "8");
+				path.setAttribute("d", `M ${x1} ${y1} L ${x2} ${y2}`);
+				path.setAttribute("stroke", "#d1b589");
+				path.setAttribute("stroke-width", "9");
 				path.setAttribute("fill", "none");
 				path.setAttribute("stroke-linecap", "round");
-				path.setAttribute("stroke-linejoin", "round");
-
 				svg.appendChild(path);
-				el.board.insertBefore(svg, el.board.firstChild);
+			}
 
-				// タイルをSVGの上に配置
-				for (const tile of tiles) {
-					tile.style.position = "relative";
-					tile.style.zIndex = "1";
-				}
+			el.board.insertBefore(svg, el.board.firstChild);
+			for (const tile of tiles) {
+				tile.style.position = "relative";
+				tile.style.zIndex = "1";
 			}
 		}
 
@@ -1003,7 +1182,7 @@
 				return;
 			}
 
-			el.landingTitle.textContent = `${info.playerName} が止まったマス: ${info.position + 1}. ${info.title}`;
+			el.landingTitle.textContent = `${info.playerName} が止まったマス: スタートから${BOARD_STEPS[info.position]}マス目・${info.title}`;
 			el.landingEvent.textContent = info.eventText;
 			el.landingMoney.textContent = `所持金変化 ${formatMoneyDiff(info.moneyDiff)}`;
 			el.landingMoney.className = `landing-money ${info.moneyDiff > 0 ? "good" : info.moneyDiff < 0 ? "bad" : ""}`.trim();
@@ -1011,9 +1190,9 @@
 			if (info.branchInfo) {
 				el.landingBranch.classList.remove("hidden");
 				el.landingBranchOptions.innerHTML = info.branchInfo.options
-					.map((o) => `<div>${o.label}: マス${o.dest + 1} ${o.tile} (条件: ${o.condition})</div>`)
+					.map((o) => `<div>${o.label}: ${BOARD_STEPS[o.dest]}マス目 ${o.tile} (条件: ${o.condition})</div>`)
 					.join("");
-				el.landingBranchPick.textContent = `${info.playerName} (${info.playerMbti}) は ${info.branchInfo.chosen.label} なので、次はマス${info.branchInfo.chosen.dest + 1} ${info.branchInfo.chosen.tile} に進みます。`;
+				el.landingBranchPick.textContent = `${info.playerName} (${info.playerMbti}) は ${info.branchInfo.chosen.label} なので、次は${BOARD_STEPS[info.branchInfo.chosen.dest]}マス目 ${info.branchInfo.chosen.tile} に進みます。`;
 			} else {
 				el.landingBranch.classList.add("hidden");
 				el.landingBranchOptions.innerHTML = "";
@@ -1025,18 +1204,20 @@
 			if (position === 4) {
 				const options = [
 					{ label: "Eルート", dest: 5, tile: TILES[5].title, condition: "Eを含む" },
-					{ label: "Iルート", dest: 7, tile: TILES[7].title, condition: "Eを含まない" }
+					{ label: "Iルート", dest: 7, tile: TILES[7].title, condition: "Iを含む" },
+					{ label: "DDDD罰金ルート", dest: 5, tile: TILES[5].title, condition: "DDDD専用・罰金" }
 				];
-				const chosen = mbtiHas(player, "E") ? options[0] : options[1];
+				const chosen = isDddd(player) ? options[2] : mbtiHas(player, "E") ? options[0] : options[1];
 				return { options, chosen };
 			}
 
-			if (position === 10) {
+			if (position === 15) {
 				const options = [
-					{ label: "Nルート", dest: 11, tile: TILES[11].title, condition: "Nを含む" },
-					{ label: "Sルート", dest: 13, tile: TILES[13].title, condition: "Nを含まない" }
+					{ label: "Nルート", dest: 16, tile: TILES[16].title, condition: "Nを含む" },
+					{ label: "Sルート", dest: 18, tile: TILES[18].title, condition: "Sを含む" },
+					{ label: "DDDD罰金ルート", dest: 17, tile: TILES[17].title, condition: "DDDD専用・追加罰金" }
 				];
-				const chosen = mbtiHas(player, "N") ? options[0] : options[1];
+				const chosen = isDddd(player) ? options[2] : mbtiHas(player, "N") ? options[0] : options[1];
 				return { options, chosen };
 			}
 
@@ -1085,7 +1266,7 @@
 			el.standingsList.innerHTML = sorted
 				.map((p, idx) => {
 					const rank = p.finishedRank ? `${p.finishedRank}位` : `${idx + 1}番手`;
-					const mark = p.finished ? "到達" : `マス${p.pos}`;
+					const mark = p.finished ? "到達" : `${BOARD_STEPS[p.pos]}マス目`;
 					return `<li>${rank} - ${p.name} (${p.mbti}) : ${mark} / <span class="money">${formatMoney(p.money)}</span></li>`;
 				})
 				.join("");
@@ -1095,7 +1276,7 @@
 			const p = STATE.players[STATE.currentPlayerIndex];
 			el.hudName.textContent = p ? p.name : "-";
 			el.hudMbti.textContent = p ? p.mbti : "-";
-			el.hudPos.textContent = p ? `${p.pos} / 20` : "-";
+			el.hudPos.textContent = p ? `${BOARD_STEPS[p.pos]} / ${BOARD_STEPS[BOARD_END]}` : "-";
 			el.hudRound.textContent = String(STATE.round);
 			el.hudMoney.textContent = p ? formatMoney(p.money) : "-";
 			if (p) {
@@ -1106,25 +1287,25 @@
 		}
 
 		function mbtiHas(player, letter) {
-			return player.mbti.includes(letter);
+			return Boolean(player && !isDddd(player) && player.mbti.includes(letter));
 		}
 
 		function getNextPosition(current, player) {
-			if (current >= 20) return 20;
+			if (current >= BOARD_END) return BOARD_END;
 
-			if (current === 4) return mbtiHas(player, "E") ? 5 : 7;
+			if (current === 4) return isDddd(player) ? 5 : mbtiHas(player, "E") ? 5 : 7;
 			if (current === 5) return 6;
 			if (current === 6) return 9;
 			if (current === 7) return 8;
 			if (current === 8) return 9;
 
-			if (current === 10) return mbtiHas(player, "N") ? 11 : 13;
-			if (current === 11) return 12;
-			if (current === 12) return 15;
-			if (current === 13) return 14;
-			if (current === 14) return 15;
+			if (current === 15) return isDddd(player) ? 17 : mbtiHas(player, "N") ? 16 : 18;
+			if (current === 16) return 17;
+			if (current === 17) return 20;
+			if (current === 18) return 19;
+			if (current === 19) return 20;
 
-			return Math.min(20, current + 1);
+			return Math.min(BOARD_END, current + 1);
 		}
 
 		function eventFor(position, player) {
@@ -1132,15 +1313,27 @@
 				const cursed = {
 					2: "噂が広まり信頼ダウン。孤立感が増した。",
 					3: "チーム内の誤解で責任を背負わされる。",
+					4: "DDDD専用の罰金ルートへ。理不尽な手数料まで請求された。",
 					5: "派手な失敗で評価が急落。",
 					8: "徹夜が祟って体調不良。",
-					10: "分岐先でトラブルに巻き込まれる。",
+					10: "休憩のつもりが一日つぶれ、予定がすべて後ろ倒しになる。",
 					12: "アイデアが盗まれてしまう。",
 					14: "細かなミスが連鎖し炎上。",
+					15: "分岐の判断を先延ばしにして追加料金を請求される。",
 					16: "判断ミスで大きな機会損失。",
 					18: "締切に間に合わず違約金発生。",
 					19: "最終面接で大失言してしまう。",
-					20: "ゴールしたが後味最悪。厄運の勝利。"
+					20: "就職した初日から寝坊。社会人生活が不穏に始まる。",
+					21: "課題を後回しにし続け、必修単位を落として留年が決まる。",
+					22: "残高を確認せず散財。家賃と生活費が同時に足りなくなる。",
+					23: "やるべき手続きを放置し、延滞金と再提出がまとめて発生。",
+					24: "返済計画を立てないまま借り入れを重ね、借金が膨らむ。",
+					25: "段取りを考えず仕事を始め、全部やり直しになって残業。",
+					26: "身だしなみの準備を怠り、大事な面談で第一印象を落とす。",
+					27: "カードの利用額を把握しておらず、請求日に口座残高が不足。",
+					28: "立て直し計画を作っただけで満足し、何ひとつ実行しない。",
+					29: "最後の締切まで先延ばし。特急料金と違約金を同時に払う。",
+					30: "どうにかゴールしたが、留年と借金の返済はまだ続く。"
 				};
 				return { text: cursed[position] || "厄イベントが発動し不運に見舞われた。", tone: "bad" };
 			}
@@ -1160,17 +1353,27 @@
 				7: { text: "一人で集中。スキルに磨きがかかる。", tone: "good" },
 				8: { text: "深夜の探究でブレイクスルー。", tone: "good" },
 				9: { text: "ルート合流。経験値を持ち寄って前進。", tone: "" },
-				10: { text: isN ? "分岐: 直感型のあなたは未来構想ルートへ。" : "分岐: 感覚型のあなたは現実設計ルートへ。", tone: "" },
-				11: { text: "大胆な発想がチームを驚かせる。", tone: "good" },
-				12: { text: "アイデアが連鎖。評価も上々。", tone: "good" },
-				13: { text: "地に足のついた改善で信頼を獲得。", tone: "good" },
-				14: { text: "丁寧な作業で安定成果。", tone: "good" },
-				15: { text: "再合流。今度は判断力が問われる。", tone: "" },
-				16: { text: isT ? "論理重視の判断で課題を解決。" : "共感重視の判断で関係を修復。", tone: "good" },
-				17: { text: "味方のサポートで調子が戻る。", tone: "good" },
-				18: { text: isJ ? "計画通りに締切突破。" : "柔軟に立ち回って締切セーフ。", tone: "good" },
-				19: { text: "最終面接。自分の物語を語る。", tone: "" },
-				20: { text: "ゴール! MBTIらしい選択で人生ゲームを完走。", tone: "good" }
+					10: { text: "小休止で頭を整理。次の課題に備える。", tone: "" },
+					11: { text: isT ? "論理重視の判断で課題を解決。" : "共感重視の判断で関係を修復。", tone: "good" },
+					12: { text: "味方のサポートで調子が戻る。", tone: "good" },
+					13: { text: isJ ? "計画通りに締切突破。" : "柔軟に立ち回って締切セーフ。", tone: "good" },
+					14: { text: "進路を見直し、自分に合う準備を始めた。", tone: "good" },
+					15: { text: isN ? "分岐: 直感型のあなたは未来構想ルートへ。" : "分岐: 感覚型のあなたは現実設計ルートへ。", tone: "" },
+					16: { text: "大胆な発想がチームを驚かせる。", tone: "good" },
+					17: { text: "アイデアが連鎖。評価も上々。", tone: "good" },
+					18: { text: "地に足のついた改善で信頼を獲得。", tone: "good" },
+					19: { text: "丁寧な作業で安定成果。", tone: "good" },
+					20: { text: "ルート合流。経験を持ち寄って社会人編へ進む。", tone: "" },
+					21: { text: "単位と予定を再確認。卒業までの計画を整えた。", tone: "good" },
+					22: { text: "固定費を見直し、無理のない生活予算を作る。", tone: "good" },
+					23: { text: "小さなタスクから着手。先延ばしを一つ克服した。", tone: "good" },
+					24: { text: "返済額を整理し、将来の資金計画が見えてきた。", tone: "good" },
+					25: { text: isJ ? "段取りよく仕事を完了。余裕を持って提出した。" : "状況に合わせて順番を調整し、仕事を完了した。", tone: "good" },
+					26: { text: "大事な場に合わせて準備し、落ち着いて面談できた。", tone: "good" },
+					27: { text: isT ? "支出データを分析して無駄を削減した。" : "信頼できる人に相談して家計を立て直した。", tone: "good" },
+					28: { text: "失敗を振り返り、今度は具体的な一歩を実行した。", tone: "good" },
+					29: { text: "最後の締切を突破。積み重ねが成果につながった。", tone: "good" },
+					30: { text: "ゴール! MBTIらしい選択で人生ゲームを完走。", tone: "good" }
 			};
 
 			return defaults[position] || { text: "静かな1ターン。", tone: "" };
@@ -1181,15 +1384,27 @@
 				const cursedMoney = {
 					2: -1200,
 					3: -1800,
+					4: -2500,
 					5: -2200,
 					8: -2600,
 					10: -2000,
 					12: -2400,
 					14: -2100,
+					15: -2500,
 					16: -2800,
 					18: -3000,
 					19: -3200,
-					20: -3500
+					20: -1800,
+					21: -4500,
+					22: -3200,
+					23: -2800,
+					24: -5200,
+					25: -2600,
+					26: -1900,
+					27: -4800,
+					28: -2400,
+					29: -4000,
+					30: -6000
 				};
 				return cursedMoney[position] ?? -1500;
 			}
@@ -1209,32 +1424,85 @@
 				7: 1400,
 				8: isN ? 1800 : 900,
 				9: 700,
-				10: 0,
-				11: isN ? 2200 : 800,
-				12: 1500,
-				13: 1400,
-				14: isJ ? 1700 : 1000,
-				15: 600,
-				16: isT ? 1300 : 900,
-				17: 1000,
-				18: isJ ? 1800 : -700,
-				19: 900,
-				20: 5000
+				10: 700,
+				11: isT ? 1300 : 900,
+				12: 1000,
+				13: isJ ? 1800 : 900,
+				14: 1100,
+				15: 0,
+				16: isN ? 2200 : 800,
+				17: 1500,
+				18: 1400,
+				19: isJ ? 1700 : 1000,
+				20: 1200,
+				21: 1600,
+				22: 1400,
+				23: 1800,
+				24: 1500,
+				25: isJ ? 2400 : 1700,
+				26: 1300,
+				27: isT ? 2300 : 1700,
+				28: 2000,
+				29: 2600,
+				30: 6000
 			};
 
 			return base[position] ?? 0;
 		}
 
+		async function animateTokenStep(player, from, to) {
+			const fromTile = el.board.querySelector(`.tile[data-id="${from}"]`);
+			const toTile = el.board.querySelector(`.tile[data-id="${to}"]`);
+			if (!fromTile || !toTile || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+				await wait(120);
+				return;
+			}
+
+			const boardRect = el.board.getBoundingClientRect();
+			const fromRect = fromTile.getBoundingClientRect();
+			const toRect = toTile.getBoundingClientRect();
+			const size = 30;
+			const startX = fromRect.left - boardRect.left + fromRect.width / 2 - size / 2;
+			const startY = fromRect.top - boardRect.top + fromRect.height / 2 - size / 2;
+			const endX = toRect.left - boardRect.left + toRect.width / 2 - size / 2;
+			const endY = toRect.top - boardRect.top + toRect.height / 2 - size / 2;
+			const token = document.createElement("div");
+			token.className = "moving-token";
+			token.style.background = player.color;
+			token.textContent = player.name.slice(0, 1).toUpperCase();
+			toTile.classList.add("move-target");
+			el.board.appendChild(token);
+
+			const animation = token.animate([
+				{ transform: `translate(${startX}px, ${startY}px) scale(1)`, offset: 0 },
+				{ transform: `translate(${(startX + endX) / 2}px, ${(startY + endY) / 2 - 20}px) scale(1.16)`, offset: 0.5 },
+				{ transform: `translate(${endX}px, ${endY}px) scale(1)`, offset: 1 }
+			], {
+				duration: 420,
+				easing: "cubic-bezier(.35,.8,.35,1)",
+				fill: "forwards"
+			});
+
+			try {
+				await animation.finished;
+			} finally {
+				token.remove();
+				toTile.classList.remove("move-target");
+			}
+		}
+
 		async function moveByAnimated(player, steps) {
 			for (let i = 0; i < steps; i += 1) {
+				const from = player.pos;
 				const next = getNextPosition(player.pos, player);
+				el.turnStrip.textContent = `${player.name} が移動中... ${i + 1} / ${steps} マス`;
+				await animateTokenStep(player, from, next);
 				player.pos = next;
+				updateHud();
 				renderBoard();
-				drawBoardPath();
-				await new Promise(resolve => setTimeout(resolve, 100));
 			}
-			if (player.pos >= 20) {
-				player.pos = 20;
+			if (player.pos >= BOARD_END) {
+				player.pos = BOARD_END;
 				if (!player.finished) {
 					player.finished = true;
 					STATE.finishedOrder.push(player.id);
@@ -1340,7 +1608,9 @@
 							await new Promise(resolve => setTimeout(resolve, 300));
 						}
 						const moneyDiff = moneyEffectFor(player.pos, player);
-						player.money = Math.max(0, player.money + moneyDiff);
+						player.money = isDddd(player)
+							? player.money + moneyDiff
+							: Math.max(0, player.money + moneyDiff);
 						updateHud();
 						renderBoard();
 
@@ -1357,7 +1627,7 @@
 						};
 						renderLandingDetail();
 						showEvent(`${player.name}: ${event.text} 所持金 ${moneyText}`.trim(), event.tone);
-						addLog(`Turn ${STATE.turns}: ${player.name} が ${d1} + ${d2} = ${total} でマス ${player.pos} に到着。${event.text} [${moneyText}]`, event.tone);
+						addLog(`Turn ${STATE.turns}: ${player.name} が ${d1} + ${d2} = ${total} でスタートから${BOARD_STEPS[player.pos]}マス目に到着。${event.text} [${moneyText}]`, event.tone);
 
 						if (player.finished) {
 							addLog(`${player.name} (${player.mbti}) は ${player.finishedRank}位 でゴール!`, "good");
@@ -1486,6 +1756,11 @@
 				}
 			});
 			el.resetBtn.addEventListener("click", resetGame);
+			let resizeFrame = null;
+			window.addEventListener("resize", () => {
+				if (resizeFrame) cancelAnimationFrame(resizeFrame);
+				resizeFrame = requestAnimationFrame(drawBoardPath);
+			});
 		}
 
 		init();
